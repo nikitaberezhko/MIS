@@ -1,19 +1,11 @@
 MIS (.NET Aspire, ASP.NET Core, PostgreSQL)
 
-Стек
-- .NET 9
-- .NET Aspire (AppHost, ServiceDefaults, ресурс PostgreSQL)
-- ASP.NET Core Minimal API
-- EF Core 9 + Npgsql
-- PostgreSQL
-
 Запуск
 1. Установите .NET SDK 9.
 2. Запустите AppHost:
    ```bash
    dotnet run --project MIS.AppHost
    ```
-   Aspire поднимет ресурс PostgreSQL и API `MIS.Api`.
 
 Архитектура
 - `MIS.Api` — Web API с минимальными эндпоинтами.
@@ -23,18 +15,9 @@ MIS (.NET Aspire, ASP.NET Core, PostgreSQL)
 Сущности домена
 - Пациент (`Patient`): ФИО, ДР, пол, контакты, адрес, страховой полис, лечащий врач, МКБ, аудиты.
 - Доктор (`Doctor`): ФИО, специальность, номер лицензии и срок, контакты, активность, аудиты.
-- Болезнь (`Disease`): код (например, ICD-10), название, описание, признаки хроническая/инфекционная, базовая тяжесть, аудиты.
-- Связь (`PatientDisease`): статус диагноза, тяжесть, даты постановки/разрешения, заметки.
-
-Эндпоинты
-- GET/POST/PUT/DELETE /api/patients
-- GET/POST/PUT/DELETE /api/doctors
-- GET/POST/PUT/DELETE /api/diseases
-- GET/POST/DELETE /api/patients/{patientId}/diseases
+- Болезнь (`Disease`): код, название, описание, признаки хроническая/инфекционная, базовая тяжесть, аудиты.
 
 Миграции
 - При старте API выполняется Database.Migrate() автоматически.
 
-Health
-- GET /healthz
-
+Писал с применением DDD, т к показалось, такая что предметная область хорошо ляжет на этот метод проектирования, решения о том что объект Entity или VO, должно приниматься конечно, когда уже полностью понятен домен сервиса, я просто предложил теоретический вариант, тесты написал не очень хорошие, был сильно ограничен по времени, если будет время и не забуду - поправлю
