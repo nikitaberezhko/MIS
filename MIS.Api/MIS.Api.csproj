@@ -9,6 +9,10 @@
   <ItemGroup>
     <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.4.2" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="9.0.4" />
+    <PackageReference Include="YamlDotNet" Version="16.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -23,6 +27,28 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MIS.ServiceDefaults\MIS.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+<ItemGroup>
+    <InternalsVisibleTo Include="IntegrationTests" />
+</ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Migrations\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Controllers\Contract\src\OpenApi\obj\Debug\net8.0\OpenApi.sourcelink.json" />
+    <_ContentIncludedByDefault Remove="Controllers\Contract\src\OpenApi\obj\Debug\net8.0\rjimswa.dswa.cache.json" />
+    <_ContentIncludedByDefault Remove="Controllers\Contract\src\OpenApi\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json" />
+    <_ContentIncludedByDefault Remove="Controllers\Contract\src\OpenApi\obj\Debug\net8.0\rjsmrazor.dswa.cache.json" />
+    <_ContentIncludedByDefault Remove="Controllers\Contract\src\OpenApi\obj\Debug\net8.0\rpswa.dswa.cache.json" />
+    <_ContentIncludedByDefault Remove="Controllers\Contract\src\OpenApi\obj\Debug\net8.0\staticwebassets.build.endpoints.json" />
+    <_ContentIncludedByDefault Remove="Controllers\Contract\src\OpenApi\obj\Debug\net8.0\staticwebassets.build.json" />
+    <_ContentIncludedByDefault Remove="Controllers\Contract\src\OpenApi\obj\Debug\net8.0\staticwebassets.development.json" />
+    <_ContentIncludedByDefault Remove="Controllers\Contract\src\OpenApi\obj\OpenApi.csproj.nuget.dgspec.json" />
+    <_ContentIncludedByDefault Remove="Controllers\Contract\src\OpenApi\obj\project.assets.json" />
+    <_ContentIncludedByDefault Remove="Controllers\Contract\src\OpenApi\wwwroot\openapi-original.json" />
   </ItemGroup>
 
 </Project>

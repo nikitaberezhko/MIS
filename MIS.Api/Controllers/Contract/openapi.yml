@@ -1,0 +1,522 @@
+openapi: 3.0.3
+info:
+  title: Medical Information System (MIS) API
+  description: API для медицинской информационной системы
+  version: 1.0.0
+
+paths:
+  /patients:
+    get:
+      summary: Получить список всех пациентов
+      description: Возвращает список всех пациентов в системе
+      operationId: getAllPatients
+      tags:
+        - Patients
+      parameters:
+        - name: page
+          in: query
+          description: Номер страницы (начиная с 1)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          description: Размер страницы
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Успешный ответ со списком пациентов
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  patients:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Patient'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationInfo'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /patients/{patientId}:
+    get:
+      summary: Получить информацию о конкретном пациенте
+      description: Возвращает детальную информацию о пациенте по его ID
+      operationId: getPatientById
+      tags:
+        - Patients
+      parameters:
+        - name: patientId
+          in: path
+          description: Уникальный идентификатор пациента
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Успешный ответ с информацией о пациенте
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /doctors/by-specialty:
+    get:
+      summary: Получить список докторов по специальности
+      description: Возвращает список докторов, отфильтрованных по специальности
+      operationId: getDoctorsBySpecialty
+      tags:
+        - Doctors
+      parameters:
+        - name: specialty
+          in: query
+          description: Специальность доктора
+          required: true
+          schema:
+            type: string
+            enum:
+              - general_practitioner
+              - cardiologist
+              - neurologist
+              - dermatologist
+              - orthopedist
+              - pediatrician
+              - gynecologist
+              - ophthalmologist
+              - psychiatrist
+              - surgeon
+              - anesthesiologist
+              - radiologist
+              - endocrinologist
+              - gastroenterologist
+              - pulmonologist
+              - urologist
+              - oncologist
+              - rheumatologist
+              - nephrologist
+              - hematologist
+        - name: page
+          in: query
+          description: Номер страницы (начиная с 1)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          description: Размер страницы
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Успешный ответ со списком докторов
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  doctors:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Doctor'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationInfo'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /diseases:
+    get:
+      summary: Получить общий список болезней
+      description: Возвращает список всех болезней в системе
+      operationId: getAllDiseases
+      tags:
+        - Diseases
+      parameters:
+        - name: page
+          in: query
+          description: Номер страницы (начиная с 1)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          description: Размер страницы
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: isChronic
+          in: query
+          description: Фильтр по хроническим болезням
+          required: false
+          schema:
+            type: boolean
+        - name: isInfectious
+          in: query
+          description: Фильтр по инфекционным болезням
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Успешный ответ со списком болезней
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  diseases:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Disease'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationInfo'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    Patient:
+      type: object
+      required:
+        - id
+        - medicalRecordNumber
+        - name
+        - address
+        - bloodType
+        - contacts
+        - sex
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор пациента
+        medicalRecordNumber:
+          type: string
+          description: Номер медицинской карты
+          example: "MR-2024-123456"
+        name:
+          $ref: '#/components/schemas/Name'
+        address:
+          $ref: '#/components/schemas/Address'
+        bloodType:
+          type: string
+          description: Группа крови
+          enum:
+            - "A+"
+            - "A-"
+            - "B+"
+            - "B-"
+            - "AB+"
+            - "AB-"
+            - "O+"
+            - "O-"
+        contacts:
+          $ref: '#/components/schemas/Contacts'
+        sex:
+          type: string
+          description: Пол пациента
+          example: "MALE"
+        primaryDoctorId:
+          type: string
+          format: uuid
+          nullable: true
+          description: ID основного лечащего врача
+
+    Doctor:
+      type: object
+      required:
+        - id
+        - name
+        - contacts
+        - specialty
+        - license
+        - isActive
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор доктора
+        name:
+          $ref: '#/components/schemas/Name'
+        contacts:
+          $ref: '#/components/schemas/Contacts'
+        specialty:
+          type: object
+          properties:
+            id:
+              type: integer
+              description: ID специальности
+            value:
+              type: string
+              description: Значение специальности
+            displayName:
+              type: string
+              description: Отображаемое название специальности
+        license:
+          $ref: '#/components/schemas/License'
+        isActive:
+          type: boolean
+          description: Активен ли доктор
+
+    Disease:
+      type: object
+      required:
+        - id
+        - name
+        - isChronic
+        - isInfectious
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор болезни
+        name:
+          type: string
+          description: Название болезни
+          example: "Гипертония"
+        description:
+          type: string
+          nullable: true
+          description: Описание болезни
+        isChronic:
+          type: boolean
+          description: Хроническая ли болезнь
+        isInfectious:
+          type: boolean
+          description: Инфекционная ли болезнь
+
+    Name:
+      type: object
+      required:
+        - firstName
+        - lastName
+      properties:
+        firstName:
+          type: string
+          description: Имя
+          example: "Иван"
+        lastName:
+          type: string
+          description: Фамилия
+          example: "Иванов"
+        middleName:
+          type: string
+          nullable: true
+          description: Отчество
+          example: "Иванович"
+        fullName:
+          type: string
+          description: Полное имя
+          example: "Иванов Иван Иванович"
+        shortName:
+          type: string
+          description: Краткое имя
+          example: "Иван Иванов"
+
+    Address:
+      type: object
+      required:
+        - addressLine
+        - city
+        - region
+        - postalCode
+      properties:
+        addressLine:
+          type: string
+          description: Адресная строка
+          example: "УЛ. ПУШКИНА, Д. 10"
+        city:
+          type: string
+          description: Город
+          example: "МОСКВА"
+        region:
+          type: string
+          description: Регион/область
+          example: "МОСКОВСКАЯ ОБЛ."
+        postalCode:
+          type: string
+          description: Почтовый индекс
+          example: "101000"
+        fullAddress:
+          type: string
+          description: Полный адрес
+          example: "УЛ. ПУШКИНА, Д. 10, МОСКВА, МОСКОВСКАЯ ОБЛ. 101000"
+
+    Contacts:
+      type: object
+      properties:
+        phone:
+          type: string
+          nullable: true
+          description: Номер телефона
+          example: "+74951234567"
+        email:
+          type: string
+          nullable: true
+          format: email
+          description: Email адрес
+          example: "patient@example.com"
+        hasPhone:
+          type: boolean
+          description: Есть ли номер телефона
+        hasEmail:
+          type: boolean
+          description: Есть ли email
+        hasAnyContact:
+          type: boolean
+          description: Есть ли хотя бы один контакт
+
+    License:
+      type: object
+      required:
+        - id
+        - number
+        - validUntil
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор лицензии
+        number:
+          type: string
+          description: Номер лицензии
+          example: "LIC-2024-001234"
+        validUntil:
+          type: string
+          format: date
+          description: Дата окончания действия лицензии
+          example: "2025-12-31"
+
+    PaginationInfo:
+      type: object
+      required:
+        - page
+        - pageSize
+        - totalCount
+        - totalPages
+      properties:
+        page:
+          type: integer
+          description: Текущая страница
+          example: 1
+        pageSize:
+          type: integer
+          description: Размер страницы
+          example: 20
+        totalCount:
+          type: integer
+          description: Общее количество записей
+          example: 150
+        totalPages:
+          type: integer
+          description: Общее количество страниц
+          example: 8
+        hasNext:
+          type: boolean
+          description: Есть ли следующая страница
+        hasPrevious:
+          type: boolean
+          description: Есть ли предыдущая страница
+
+    Error:
+      type: object
+      required:
+        - statusCode
+        - description
+        - timestamp
+        - traceId
+      properties:
+        statusCode:
+          type: integer
+          description: HTTP код статуса ошибки
+          example: 400
+        description:
+          type: string
+          description: Описание ошибки
+          example: "Некорректные параметры запроса"
+        timestamp:
+          type: string
+          format: date-time
+          description: Время возникновения ошибки
+          example: "2024-01-15T10:30:00Z"
+        traceId:
+          type: string
+          description: Уникальный идентификатор трассировки для отслеживания ошибки
+          example: "550e8400-e29b-41d4-a716-446655440000"
+
+  responses:
+    BadRequest:
+      description: Некорректный запрос
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            statusCode: 400
+            description: "Некорректные параметры запроса"
+            timestamp: "2024-01-15T10:30:00Z"
+            traceId: "550e8400-e29b-41d4-a716-446655440000"
+
+    NotFound:
+      description: Ресурс не найден
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            statusCode: 404
+            description: "Пациент с указанным ID не найден"
+            timestamp: "2024-01-15T10:30:00Z"
+            traceId: "550e8400-e29b-41d4-a716-446655440000"
+
+    InternalServerError:
+      description: Внутренняя ошибка сервера
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            statusCode: 500
+            description: "Внутренняя ошибка сервера"
+            timestamp: "2024-01-15T10:30:00Z"
+            traceId: "550e8400-e29b-41d4-a716-446655440000"
+
+tags:
+  - name: Patients
+    description: Операции с пациентами
+  - name: Doctors
+    description: Операции с докторами
+  - name: Diseases
+    description: Операции с болезнями

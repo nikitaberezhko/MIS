@@ -1,40 +1,107 @@
-using Aspire.Npgsql.EntityFrameworkCore.PostgreSQL;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 using MIS.Api.Infrastructure;
-using MIS.Api.Endpoints;
+using MIS.ServiceDefaults;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
+using MIS.Api.Infrastructure.Repositories;
+using MIS.Api.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
 builder.Services.AddOpenApi();
+builder.Services.AddControllers();
 
-// Register AppDbContext using Aspire Npgsql. The connection comes from AppHost resource "mis-db".
-builder.AddNpgsqlDbContext<AppDbContext>("mis-db");
+// Регистрация ExceptionHandlerMiddleware
+builder.Services.AddScoped<ExceptionHandlerMiddleware>();
+
+// Настройка Swagger для development environment
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddSwaggerGen(c =>
+    {
+        
+        
+            // Fallback если файл не найден
+            c.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = "Medical Information System (MIS) API",
+                Version = "v1",
+                Description = "API для медицинской информационной системы"
+            });
+        
+        
+        // Добавляем XML комментарии если есть
+        var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+        if (File.Exists(xmlPath))
+        {
+            c.IncludeXmlComments(xmlPath);
+        }
+    });
+}
+
+// Настройка базы данных в зависимости от окружения
+if (builder.Environment.IsEnvironment("Testing"))
+{
+    // Для тестового окружения используем прямую настройку DbContext
+    builder.Services.AddDbContext<AppDbContext>(options =>
+    {
+        var connectionString = builder.Configuration.GetConnectionString("mis-db") 
+            ?? builder.Configuration["Aspire:Npgsql:EntityFrameworkCore:PostgreSQL:ConnectionString"]
+            ?? builder.Configuration["Aspire:Npgsql:EntityFrameworkCore:PostgreSQL:AppDbContext:ConnectionString"];
+        
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            throw new InvalidOperationException("ConnectionString is missing. It should be provided in 'ConnectionStrings:mis-db' or under the 'ConnectionString' key in 'Aspire:Npgsql:EntityFrameworkCore:PostgreSQL' or 'Aspire:Npgsql:EntityFrameworkCore:PostgreSQL:AppDbContext' configuration section.");
+        }
+        
+        options.UseNpgsql(connectionString);
+        options.EnableSensitiveDataLogging();
+        options.EnableDetailedErrors();
+    });
+}
+else
+{
+    // Для остальных окружений используем Aspire
+    builder.AddNpgsqlDbContext<AppDbContext>("mis-db");
+}
+
+builder.Services.AddScoped<PatientRepository>();
+builder.Services.AddScoped<DoctorRepository>();
+builder.Services.AddScoped<DiseaseRepository>();
 
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    
+    // Настройка Swagger UI
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "MIS API (from openapi.yml)");
+        c.RoutePrefix = "swagger"; // Swagger UI будет доступен по адресу /swagger
+        c.DocumentTitle = "MIS API Documentation";
+    });
 }
 
 app.MapDefaultEndpoints();
 
-// Apply pending EF Core migrations on startup
+app.UseMiddleware<ExceptionHandlerMiddleware>();
+
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
 }
 
-app.MapGet("/healthz", () => Results.Ok("OK"));
+app.MapGet("/health", () => Results.Ok("OK"));
 
-// Map domain endpoints
-app.MapPatients();
-app.MapDoctors();
-app.MapDiseases();
-app.MapPatientDiseases();
+app.MapControllers();
 
 app.Run();
+
+public partial class Program { }
